@@ -11,22 +11,17 @@ import { TopWordsService } from '../top-words/top-words.service';
   styleUrls: ['./tweets-list.component.css']
 })
 export class TweetsListComponent implements OnInit {
-  private hashtag = 'IoT';
-  private limit = 100;
-  private resultType = 'recent';
-
   public retrievedTweets;
-  //public parsedTweets = [];
   public topWords = [];
 
-  constructor(private tweetsService: TweetsService,
+  constructor(public tweetsService: TweetsService,
               private topWordsService: TopWordsService) {}
 
-  //try to send request in server.js like I did here - using headers etc and not twitter package
   ngOnInit() {
     this.getTweets();
   }
 
+  /** remove common words using common-words npm package */
   public removeCommonWords(words): string[] {
     let filteredWords = [];
     commonWords.forEach(obj => {
@@ -40,12 +35,13 @@ export class TweetsListComponent implements OnInit {
   };
 
   /** let's convert all words to lower case
-  * so that we can get all common words out*/
+    * so that we can get all common words out */
   public convertToLowerCase(words): string[] {
     return words.map(word => word.toLowerCase());
   }
 
-  public parseAllTweetsIntoWords(): void {
+  /** parse tweets, clean them up and get top words */
+  public getTopWords(): void {
     let allTweetsText = '';
     let parsedTweets = [];
     let lowercaseParsedTweets = [];
@@ -56,19 +52,15 @@ export class TweetsListComponent implements OnInit {
     }
 
     parsedTweets = allTweetsText.split(" ");
-    console.log('parsedTweets: ', parsedTweets);
     lowercaseParsedTweets = this.convertToLowerCase(parsedTweets);
     noCommonWords = this.removeCommonWords(lowercaseParsedTweets);
-    //console.log('noCommonWords: ', noCommonWords);
     noCommonWords = this.doAdditionalCleanUp(noCommonWords);
+
     this.topWords = mostCommon(noCommonWords, 20);
     this.topWordsService.broadcast(this.topWords);
-    //console.log(this.topWords);
   }
 
-  /** common-words package helped us get rid us of 100 most common words
-  * but there are still additional symbols, hashtags and numbers we'll filter out */
-  public doAdditionalCleanUp(words): string[] {
+  private doAdditionalCleanUp(words): string[] {
     for (let i in words) {
       if (words[i] !== -1) {
         if (this.isInvalid(words[i])) {
@@ -79,22 +71,21 @@ export class TweetsListComponent implements OnInit {
     return words;
   }
 
-  private isInvalid(word): boolean {
+  /** common-words package helped us get rid us of 100 most common words
+  * but there are still additional symbols, hashtags and numbers we'll filter out */
+  public isInvalid(word): boolean {
     let isUnacceptedValue = (word === '=' || word === '-' || word === 'it\'s'|| word === 'are'|| word === 'is'|| !isNaN(word));
     let startsWithIncorrectSymbol = (word.charAt(0) === '#' ||  word.charAt(0) === '&' || word.charAt(0) === '@');
 
     return isUnacceptedValue || startsWithIncorrectSymbol;
   }
 
-  private getTweets(): void {
-    this.tweetsService.getTweetsByHashtag(this.hashtag, this.limit, this.resultType)
+  public getTweets(): void {
+    this.tweetsService.getTweetsByHashtag()
       .subscribe(res => {
-        //console.log('res: ', res);
         this.retrievedTweets = res['statuses'];
-        this.parseAllTweetsIntoWords();
+        this.getTopWords();
       });
-
-    //this.tweetsService.user().subscribe(user => console.log('user: ', user));
   }
 
 }

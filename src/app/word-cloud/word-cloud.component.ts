@@ -10,7 +10,7 @@ import { TopWordsService } from '../top-words/top-words.service';
   styleUrls: ['./word-cloud.component.css']
 })
 export class WordCloudComponent implements OnInit {
-  private topWords;
+  public topWords;
   private topWordsSubscription: Subscription;
 
   private options: CloudOptions = {
@@ -21,8 +21,8 @@ export class WordCloudComponent implements OnInit {
   };
 
   private zoomOnHoverOptions: ZoomOnHoverOptions = {
-    scale: 1.5, // Elements will become 130 % of current zize on hover
-    transitionTime: 1.2, // it will take 1.2 seconds until the zoom level defined in scale property has been reached
+    scale: 1.5,
+    transitionTime: 1.2
   };
 
   constructor(private topWordsService: TopWordsService) {}
@@ -31,12 +31,13 @@ export class WordCloudComponent implements OnInit {
     this.topWordsSubscription = this.topWordsService.topWords.subscribe(value => {
       this.topWords = value;
       this.adjustKeyNames(this.topWords);
-      //this.enlargeWordCloud(this.topWords);
-      console.log('new topWords: ', this.topWords);
     });
   }
 
-  private adjustKeyNames(topWordsData): void {
+  /** common-words package gave us words in a format that
+    * angular-tag-cloud package doesn't recognize
+    * let's adjust it here */
+  public adjustKeyNames(topWordsData): void {
     topWordsData.forEach(data => {
       data.text = data.token;
       delete data.token;
@@ -44,13 +45,6 @@ export class WordCloudComponent implements OnInit {
       data.weight = data.count;
       delete data.count;
     });
-  }
-
-
-  private enlargeWordCloud(topWordsData): void {
-    topWordsData.forEach(data => {
-      data.weight = data.weight*5;
-    })
   }
 
   ngOnDestroy() {
