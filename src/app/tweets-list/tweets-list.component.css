@@ -1,0 +1,8 @@
+.tweets-list {
+  width: 45%;
+  float: right;
+}
+
+.tweet-card {
+  margin: 10px;
+}

@@ -1,0 +1,9 @@
+<div class="tweets-list">
+  <app-tweet-card
+    *ngFor="let tweet of retrievedTweets"
+    tweetText="{{ tweet.text }}"
+    username="{{ tweet.user.name }}"
+    userImg="{{ tweet.user.profile_image_url }}"
+    class="tweet-card">
+  </app-tweet-card>
+</div>
